@@ -21,7 +21,9 @@ const express = require('express'),
   exec = require('child_process').exec,
   voice = express(), //initialize an express server for gui
   // socket = express(), //initialize an express server for socket.io
-  server = require('http').Server(voice); // init an http server for dialogflow
+  server = require('http').Server(voice), // init an http server for dialogflow
+  querystring = require('querystring'),
+  http = require('http');
 // socketServer = require('http').Server(socket), // init an http server for socket.io
 // io = require('socket.io')(socketServer), // not needed for now
 
@@ -87,19 +89,49 @@ voice.post('/hook', function(req, res) {
   }
 });
 
+//http request code
+const postData = querystring.stringify({
+  msg: 'next'
+});
+
+const options = {
+  hostname: 'b206242c.ngrok.io',
+  port: 8081,
+  path: '/get',
+  method: 'POST'
+};
+
+const req2 = http.request(options, res => {
+  console.log(`STATUS: ${res.statusCode}`);
+  console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+  res.setEncoding('utf8');
+  res.on('data', chunk => {
+    console.log(`BODY: ${chunk}`);
+  });
+  res.on('end', () => {
+    console.log('No more data in response.');
+  });
+});
+
+req2.on('error', e => {
+  console.error(`problem with request: ${e.message}`);
+});
+
 function process_request(req, res) {
   var output_string = 'there was an error';
   if (req.body.queryResult.intent.displayName == 'nextSlide') {
-    var data = 'down';
-    console.log(data);
-    if (data && keys.includes(data)) {
-      try {
-        keySender.sendKey(data);
-        slide++;
-      } catch (error) {
-        console.log(error);
-      }
-    }
+    req2.write(postData);
+    req2.end();
+    // var data = 'down';
+    // console.log(data);
+    // if (data && keys.includes(data)) {
+    //   try {
+    //     keySender.sendKey(data);
+    //     slide++;
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
     output_string = 'Moving to the next slide';
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
