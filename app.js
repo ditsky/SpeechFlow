@@ -121,6 +121,7 @@ function process_request(req, res) {
   var output_string = 'there was an error';
   if (req.body.queryResult.intent.displayName == 'nextSlide') {
     req2.write(postData);
+    console.log(req2.body);
     req2.end();
     // var data = 'down';
     // console.log(data);
