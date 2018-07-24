@@ -226,35 +226,35 @@ function process_request(req, res, next) {
 }
 //WEBHOOK CODE ENDS
 
-//Monkey patching the node-key-sender library to fix jar path issues
-keySender.execute = function(arrParams) {
-  return new Promise(function(resolve, reject) {
-    //path where the jar file resides
-    const jarPath = path.join(
-      __dirname,
-      'node_modules',
-      'node-key-sender',
-      'jar',
-      'key-sender.jar'
-    );
-    //generate command to execute the jar file
-    //original command with path in quotes replace with path without enclosed in quotes
-    const command =
-      'java -jar ' +
-      jarPath +
-      ' ' +
-      arrParams.join(' ') +
-      keySender.getCommandLineOptions();
+// //Monkey patching the node-key-sender library to fix jar path issues
+// keySender.execute = function(arrParams) {
+//   return new Promise(function(resolve, reject) {
+//     //path where the jar file resides
+//     const jarPath = path.join(
+//       __dirname,
+//       'node_modules',
+//       'node-key-sender',
+//       'jar',
+//       'key-sender.jar'
+//     );
+//     //generate command to execute the jar file
+//     //original command with path in quotes replace with path without enclosed in quotes
+//     const command =
+//       'java -jar ' +
+//       jarPath +
+//       ' ' +
+//       arrParams.join(' ') +
+//       keySender.getCommandLineOptions();
 
-    return exec(command, {}, function(error, stdout, stderr) {
-      if (error == null) {
-        resolve(stdout, stderr);
-      } else {
-        reject(error, stdout, stderr);
-      }
-    });
-  });
-};
+//     return exec(command, {}, function(error, stdout, stderr) {
+//       if (error == null) {
+//         resolve(stdout, stderr);
+//       } else {
+//         reject(error, stdout, stderr);
+//       }
+//     });
+//   });
+// };
 
 // //on new connection to socket.io
 // io.on('connection', function(socket) {
