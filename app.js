@@ -21,16 +21,17 @@ const express = require('express'),
   exec = require('child_process').exec,
   voice = express(), //initialize an express server for gui
   // socket = express(), //initialize an express server for socket.io
-  server = require('http').Server(voice), // init an http server for dialogflow
+  // server = require('http').Server(voice), // init an http server for dialogflow
   querystring = require('querystring'),
-  http = require('http');
+  http = require('http'),
+  axios = require('axios');
 // socketServer = require('http').Server(socket), // init an http server for socket.io
 // io = require('socket.io')(socketServer), // not needed for now
 
-server.listen(process.env.PORT, function() {
-  // let the dialogflow's server listen to heroku's port
-  console.log('API server listening...');
-});
+// server.listen(process.env.PORT, function() {
+//   // let the dialogflow's server listen to heroku's port
+//   console.log('API server listening...');
+// });
 
 //only these keys will be activated by node-key-sender
 keys = ['left', 'right', 'up', 'down', 'space', 'enter'];
@@ -76,53 +77,61 @@ var bodyParser = require('body-parser');
 
 voice.use(bodyParser.json());
 
-voice.post('/hook', function(req, res) {
-  process_request(req, res);
+voice.post('/hook', process_request, function(req, res) {
   var d = new Date();
   var time = d.toTimeString();
   console.log(time);
-  if (req.body.queryResult.intent.displayName == 'randomStudent') {
-    console.log('Selected a random student ' + selectedStudent);
-  } else {
-    console.log('Moved to slide ' + slide);
-    console.dir(req.body.originalDetectIntentRequest.payload.user.userId);
-  }
+});
+
+voice.post('/users', function(req, res) {
+  console.log(req.body);
 });
 
 //http request code
-const postData = querystring.stringify({
-  msg: 'next'
-});
+// const postData = querystring.stringify({
+//   msg: 'next'
+// });
 
-const options = {
-  hostname: 'b206242c.ngrok.io',
-  port: 8081,
-  path: '/get',
-  method: 'POST'
-};
+// const options = {
+//   hostname: 'b206242c.ngrok.io',
+//   port: 8081,
+//   path: '/get',
+//   method: 'POST',
+//   headers: {
+//     'Content-Type': 'application/x-www-form-urlencoded',
+//     'Content-Length': Buffer.byteLength(postData)
+//   }
+// };
 
-const req2 = http.request(options, res => {
-  console.log(`STATUS: ${res.statusCode}`);
-  console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-  res.setEncoding('utf8');
-  res.on('data', chunk => {
-    console.log(`BODY: ${chunk}`);
-  });
-  res.on('end', () => {
-    console.log('No more data in response.');
-  });
-});
+// const req2 = http.request(options, res => {
+//   console.log(`STATUS: ${res.statusCode}`);
+//   console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+//   res.setEncoding('utf8');
+//   res.on('data', chunk => {
+//     console.log(`BODY: ${chunk}`);
+//   });
+//   res.on('end', () => {
+//     console.log('No more data in response.');
+//   });
+// });
 
-req2.on('error', e => {
-  console.error(`problem with request: ${e.message}`);
-});
+// req2.on('error', e => {
+//   console.error(`problem with request: ${e.message}`);
+// });
 
-function process_request(req, res) {
+// req2.write(postData);
+// console.dir(req2);
+// req2.end();
+
+function process_request(req, res, next) {
   var output_string = 'there was an error';
   if (req.body.queryResult.intent.displayName == 'nextSlide') {
-    req2.write(postData);
-    console.log(req2.body);
-    req2.end();
+    axios
+      .post('https://b206242c.ngrok.io/get', { msg: 'next' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.json({ message: 'completed next' });
+      });
     // var data = 'down';
     // console.log(data);
     // if (data && keys.includes(data)) {
@@ -136,58 +145,75 @@ function process_request(req, res) {
     output_string = 'Moving to the next slide';
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
-    var data = 'enter';
-    console.log(data);
-    if (data && keys.includes(data)) {
-      try {
-        if (slideNum < 10) {
-          keySender.sendKeys([slideNum, data]);
-        } else {
-          var slideNumStr = slideNum.toString();
-          var length = slideNumStr.length;
-          var array = [];
-          for (var i = 0; i < length; i++) {
-            array.push(slideNumStr.charAt(i));
-          }
-          array.push(data);
-          keySender.sendKeys(array);
-        }
-        slide = slideNum;
-      } catch (error) {
-        console.log(error);
-      }
-    }
+    axios
+      .post('https://b206242c.ngrok.io/get', { msg: 'goTo', num: slideNum })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.json({ message: 'completed goTo' });
+      });
+    // var data = 'enter';
+    // console.log(data);
+    // if (data && keys.includes(data)) {
+    //   try {
+    //     if (slideNum < 10) {
+    //       keySender.sendKeys([slideNum, data]);
+    //     } else {
+    //       var slideNumStr = slideNum.toString();
+    //       var length = slideNumStr.length;
+    //       var array = [];
+    //       for (var i = 0; i < length; i++) {
+    //         array.push(slideNumStr.charAt(i));
+    //       }
+    //       array.push(data);
+    //       keySender.sendKeys(array);
+    //     }
+    //     slide = slideNum;
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
     output_string = 'Moving to slide number ' + slideNum;
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
-    var rand = students[Math.floor(Math.random() * students.length)];
-    output_string = 'Selected ' + rand;
-    selectedStudent = rand;
+    axios
+      .post('https://b206242c.ngrok.io/get', { msg: 'random' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.json({ message: 'completed random' });
+      });
+    // var rand = students[Math.floor(Math.random() * students.length)];
+    // output_string = 'Selected ' + rand;
+    // selectedStudent = rand;
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
-    linkController.goToLink();
-    output_string = 'opening the link';
+    axios
+      .post('https://b206242c.ngrok.io/get', { msg: 'link' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.json({ message: 'completed link' });
+      });
+    // linkController.goToLink();
+    // output_string = 'opening the link';
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
-    var data = 'up';
-    console.log(data);
-    if (data && keys.includes(data)) {
-      try {
-        keySender.sendKey(data);
-        slide--;
-      } catch (error) {
-        console.log(error);
-      }
-    }
+    axios
+      .post('https://b206242c.ngrok.io/get', { msg: 'back' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.json({ message: 'completed back' });
+      });
+    // var data = 'up';
+    // console.log(data);
+    // if (data && keys.includes(data)) {
+    //   try {
+    //     keySender.sendKey(data);
+    //     slide--;
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
     output_string = 'Moving to the previous slide';
   } else {
     output_string = 'oh noooooooooooooo';
   }
-  return res.json({
-    fulfillmentMessages: [],
-    fulfillmentText: output_string,
-    payload: { slack: { text: output_string } },
-    outputContexts: [],
-    source: 'Test Source',
-    followupEventInput: {}
-  });
+  next();
 }
 //WEBHOOK CODE ENDS
 
@@ -275,3 +301,5 @@ keySender.execute = function(arrParams) {
 //   console.log('API server listening...');
 // });
 // });
+
+module.exports = voice;
