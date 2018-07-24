@@ -192,8 +192,7 @@ function process_request(req, res, next) {
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
     // selectedStudent = rand;
-    console.dir(req.body);
-    console.dir(res.body);
+    console.dir(res);
     req.output_string = 'selected Marie the greatest professor in the world';
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
