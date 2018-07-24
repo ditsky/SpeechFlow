@@ -81,10 +81,19 @@ voice.post('/hook', process_request, function(req, res) {
   var d = new Date();
   var time = d.toTimeString();
   console.log(time);
+  return res.json({
+    fulfillmentMessages: [],
+    fulfillmentText: req.output_string,
+    payload: {},
+    outputContexts: [],
+    source: 'Test Source',
+    followupEventInput: {}
+  });
 });
 
 voice.post('/users', function(req, res) {
   console.log(req.body);
+  res.json({ msg: 'completed' });
 });
 
 //http request code
@@ -142,7 +151,7 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    output_string = 'Moving to the next slide';
+    req.output_string = 'Moving to the next slide';
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
     axios
@@ -172,7 +181,7 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    output_string = 'Moving to slide number ' + slideNum;
+    req.output_string = 'Moving to slide number ' + slideNum;
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'random' })
@@ -191,7 +200,7 @@ function process_request(req, res, next) {
         res.json({ message: 'completed link' });
       });
     // linkController.goToLink();
-    // output_string = 'opening the link';
+    req.output_string = 'opening the link';
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'back' })
@@ -209,9 +218,9 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    output_string = 'Moving to the previous slide';
+    req.output_string = 'Moving to the previous slide';
   } else {
-    output_string = 'oh noooooooooooooo';
+    req.output_string = 'oh noooooooooooooo';
   }
   next();
 }
