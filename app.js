@@ -193,7 +193,7 @@ function process_request(req, res, next) {
     // output_string = 'Selected ' + rand;
     // selectedStudent = rand;
     console.log(res);
-    req.output_string = 'selected Marie the greatest professor in the world';
+    req.output_string = 'selected ' + res.body.msg;
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
