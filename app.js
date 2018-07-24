@@ -187,13 +187,13 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'random' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        req.output_string = 'selected ' + response.msg;
         res.json({ message: 'completed random' });
       });
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
     // selectedStudent = rand;
     console.log(res);
-    req.output_string = 'selected ' + res.body.msg;
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
