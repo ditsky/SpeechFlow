@@ -192,6 +192,7 @@ function process_request(req, res, next) {
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
     // selectedStudent = rand;
+    req.output_string = 'selected' + req.body.msg;
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
