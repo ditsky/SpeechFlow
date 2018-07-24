@@ -83,7 +83,7 @@ voice.post('/hook', process_request, function(req, res) {
   console.log(time);
   return res.json({
     fulfillmentMessages: [],
-    fulfillmentText: req.output_string,
+    fulfillmentText: res.locals.output_string,
     payload: {},
     outputContexts: [],
     source: 'Test Source',
@@ -133,7 +133,6 @@ voice.post('/users', function(req, res) {
 // req2.end();
 
 function process_request(req, res, next) {
-  var output_string = 'there was an error';
   if (req.body.queryResult.intent.displayName == 'nextSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'next' })
@@ -151,7 +150,7 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    req.output_string = 'Moving to the next slide';
+    res.locals.output_string = 'Moving to the next slide';
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
     axios
@@ -181,19 +180,18 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    req.output_string = 'Moving to slide number ' + slideNum;
+    res.locals.output_string = 'Moving to slide number ' + slideNum;
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'random' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        req.output_string = 'selected ' + response.msg;
+        res.locals.output_string = 'selected ' + response.msg;
         res.json({ message: 'completed random' });
       });
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
     // selectedStudent = rand;
-    console.log(res);
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
@@ -202,7 +200,7 @@ function process_request(req, res, next) {
         res.json({ message: 'completed link' });
       });
     // linkController.goToLink();
-    req.output_string = 'opening the link';
+    res.locals.output_string = 'opening the link';
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'back' })
@@ -220,9 +218,9 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    req.output_string = 'Moving to the previous slide';
+    res.locals.output_string = 'Moving to the previous slide';
   } else {
-    req.output_string = 'oh noooooooooooooo';
+    res.locals.output_string = 'oh noooooooooooooo';
   }
   next();
 }
