@@ -138,7 +138,6 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'next' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        res.json({ message: 'completed next' });
       });
     // var data = 'down';
     // console.log(data);
@@ -157,7 +156,6 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'goTo', num: slideNum })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        res.json({ message: 'completed goTo' });
       });
     // var data = 'enter';
     // console.log(data);
@@ -187,7 +185,6 @@ function process_request(req, res, next) {
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'selected ' + response.msg;
-        res.json({ message: 'completed random' });
       });
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
@@ -197,7 +194,6 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        res.json({ message: 'completed link' });
       });
     // linkController.goToLink();
     res.locals.output_string = 'opening the link';
@@ -206,7 +202,6 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'back' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        res.json({ message: 'completed back' });
       });
     // var data = 'up';
     // console.log(data);
