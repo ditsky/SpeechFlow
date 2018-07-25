@@ -81,7 +81,9 @@ voice.post('/hook', process_request, function(req, res) {
   var d = new Date();
   var time = d.toTimeString();
   console.log(time);
-  return res.json({
+  console.log('req.body is: ');
+  console.log(JSON.stringify(req.body, null, 5));
+  res.json({
     fulfillmentMessages: [],
     fulfillmentText: res.locals.output_string,
     payload: {},
@@ -132,12 +134,32 @@ voice.post('/users', function(req, res) {
 // console.dir(req2);
 // req2.end();
 
+const mongoose = require('mongoose');
+mongoose.connect(
+  'mongodb://' +
+    process.env.mlab_dbuser +
+    ':' +
+    process.env.mlab_dbpassword +
+    '@ds113680.mlab.com:13680/heroku_t46zp7gq'
+);
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log('we are connected!');
+});
+
 function process_request(req, res, next) {
-  if (req.body.queryResult.intent.displayName == 'nextSlide') {
+  if (req.body.queryResult.intent.displayName == 'connect') {
+  } else if (req.body.queryResult.intent.displayName == 'nextSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'next' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'Moving to the next slide';
+        next();
+      })
+      .catch(error => {
+        console.log('error in nextSlide' + error);
       });
     // var data = 'down';
     // console.log(data);
@@ -149,13 +171,17 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    res.locals.output_string = 'Moving to the next slide';
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'goTo', num: slideNum })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'Moving to slide number ' + slideNum;
+        next();
+      })
+      .catch(error => {
+        console.log('error in goToSlide' + error);
       });
     // var data = 'enter';
     // console.log(data);
@@ -178,13 +204,16 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    res.locals.output_string = 'Moving to slide number ' + slideNum;
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'random' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
-        res.locals.output_string = 'selected ' + response.msg;
+        res.locals.output_string = 'selected ' + response.data.msg;
+        next();
+      })
+      .catch(error => {
+        console.log('error in randonStudent' + error);
       });
     // var rand = students[Math.floor(Math.random() * students.length)];
     // output_string = 'Selected ' + rand;
@@ -194,14 +223,23 @@ function process_request(req, res, next) {
       .post('https://b206242c.ngrok.io/get', { msg: 'link' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'opening the link';
+        next();
+      })
+      .catch(error => {
+        console.log('error in goToLink' + error);
       });
     // linkController.goToLink();
-    res.locals.output_string = 'opening the link';
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'back' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'Moving to the previous slide';
+        next();
+      })
+      .catch(error => {
+        console.log('error in previousSlide' + error);
       });
     // var data = 'up';
     // console.log(data);
@@ -213,11 +251,10 @@ function process_request(req, res, next) {
     //     console.log(error);
     //   }
     // }
-    res.locals.output_string = 'Moving to the previous slide';
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
+    next();
   }
-  next();
 }
 //WEBHOOK CODE ENDS
 
