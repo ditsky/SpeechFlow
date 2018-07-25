@@ -134,12 +134,14 @@ voice.post('/users', function(req, res) {
 // console.dir(req2);
 // req2.end();
 
-const mongoose = require('mongoose');
+//Connect to Mlab database
+const mongoose = require('mongoose'),
+  auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-    process.env.mlab_dbuser +
-    ':' +
-    process.env.mlab_dbpassword +
+  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  ':' +
+  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
@@ -150,6 +152,7 @@ db.once('open', function() {
 
 function process_request(req, res, next) {
   if (req.body.queryResult.intent.displayName == 'connect') {
+    //>>>>>>>>>>>DATABASE CODE HERE<<<<<<<<<<<<
   } else if (req.body.queryResult.intent.displayName == 'nextSlide') {
     axios
       .post('https://b206242c.ngrok.io/get', { msg: 'next' })
