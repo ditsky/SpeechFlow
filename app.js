@@ -78,9 +78,9 @@ var bodyParser = require('body-parser');
 voice.use(bodyParser.json());
 
 voice.post('/hook', attachConnection, sendCommand, function(req, res) {
-  var d = new Date();
-  var time = d.toTimeString();
-  console.log(time);
+  // var d = new Date();
+  // var time = d.toTimeString();
+  // console.log(time);
   // console.log('req.body is: ');
   // console.log(JSON.stringify(req.body, null, 5));
   res.json({
@@ -105,9 +105,9 @@ const mongoose = require('mongoose'),
   auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
   ':' +
-  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
+  process.env.mlab_dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
@@ -127,17 +127,18 @@ function newCode() {
 //recieving ngrok from laptop
 function updateNgrok(code, ngrok) {
   Connection.update({ code: code }, { $set: { ngrok: ngrok } })
-    .then(res.send('updated'))
-    .error(res.send('error' + error));
+    .then(console.log('in updateNgrok: updated ngrok'))
+    .catch(error => {
+      console.log('error in updateNgrok: ' + error);
+    });
 }
 
-//recieving userID from phone
-function updateUser(req, res, next) {
-  Connection.update({ code: code }, { $set: { userID: userID } }).then(
-    res.send('updated')
-  );
-  next().error(res.send('error: ' + error));
-}
+// //recieving userID from phone
+// function updateUser(req, res, next) {
+//   Connection.update({ code: code }, { $set: { userID: userID } })
+//     .then(next())
+//     .catch(error);
+// }
 
 function createUser(userID) {
   const code = newCode();
@@ -165,7 +166,7 @@ function sendCommand(req, res, next) {
         next();
       })
       .catch(error => {
-        console.log('error in nextSlide' + error);
+        console.log('error in nextSlide: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
@@ -177,29 +178,33 @@ function sendCommand(req, res, next) {
         next();
       })
       .catch(error => {
-        console.log('error in goToSlide' + error);
+        console.log('error in goToSlide: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
       .post(res.locals.connection.ngrok + '/get', { msg: 'random' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
+        console.log('randomStudent response.data.msg: ' + response.data.msg);
         res.locals.output_string = 'selected ' + response.data.msg;
         next();
       })
       .catch(error => {
-        console.log('error in randonStudent' + error);
+        console.log('error in randonStudent: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
-      .post(res.locals.connection.ngrok + '/get', { msg: 'link' })
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'link',
+        url: 'www.google.com'
+      })
       .then(response => {
-        console.log('on heroku sending to ngrok ');
+        console.log('on heroku sending to ngrok, change goToLink Later');
         res.locals.output_string = 'opening the link';
         next();
       })
       .catch(error => {
-        console.log('error in goToLink' + error);
+        console.log('error in goToLink: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
@@ -210,7 +215,7 @@ function sendCommand(req, res, next) {
         next();
       })
       .catch(error => {
-        console.log('error in previousSlide' + error);
+        console.log('error in previousSlide: ' + error);
       });
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
@@ -226,15 +231,24 @@ function attachConnection(req, res, next) {
     .exec()
     .then(connection => {
       if (connection.length == 0) {
-        let newConnection = createUser({
-          userID: req.body.originalDetectIntentRequest.payload.user.userId
-        });
-        newConnection.save().then(() => {
-          res.locals.connection = newConnection;
-          next();
-        });
+        let newConnection = createUser(
+          req.body.originalDetectIntentRequest.payload.user.userId
+        );
+        console.log('attachConnection newConnection: ' + newConnection);
+        newConnection
+          .save()
+          .then(() => {
+            res.locals.connection = newConnection;
+            next();
+          })
+          .catch(error => {
+            console.log(
+              'error in attachConnection, save newConnection: ' + error
+            );
+          });
       } else {
         res.locals.connection = connection[0];
+        console.log('attachConnection connection attached: ' + connection[0]);
         next();
       }
     })
