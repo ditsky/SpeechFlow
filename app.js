@@ -101,8 +101,8 @@ voice.post('/users', function(req, res) {
 });
 
 //Connect to Mlab database
-const mongoose = require('mongoose'),
-  auth = require('./config/auth');
+const mongoose = require('mongoose');
+// const auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
   process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
