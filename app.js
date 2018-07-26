@@ -97,7 +97,7 @@ voice.post('/users', function(req, res) {
   console.log('the user code is: ' + req.body.code);
   console.log('the ngrok id is: ' + req.body.ngrok);
   updateNgrok(req.body.code, req.body.ngrok);
-  res.json({ msg: 'completed' });
+  res.json({ msg: 'ngrok updated' });
 });
 
 //Connect to Mlab database
