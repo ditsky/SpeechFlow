@@ -171,7 +171,10 @@ function sendCommand(req, res, next) {
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
     axios
-      .post(res.locas.connection.ngrok + '/get', { msg: 'goTo', num: slideNum })
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'goTo',
+        num: slideNum
+      })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to slide number ' + slideNum;
