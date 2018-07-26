@@ -77,12 +77,12 @@ var bodyParser = require('body-parser');
 
 voice.use(bodyParser.json());
 
-voice.post('/hook', process_request, function(req, res) {
+voice.post('/hook', attachConnection, sendCommand, function(req, res) {
   var d = new Date();
   var time = d.toTimeString();
   console.log(time);
-  console.log('req.body is: ');
-  console.log(JSON.stringify(req.body, null, 5));
+  // console.log('req.body is: ');
+  // console.log(JSON.stringify(req.body, null, 5));
   res.json({
     fulfillmentMessages: [],
     fulfillmentText: res.locals.output_string,
@@ -94,45 +94,11 @@ voice.post('/hook', process_request, function(req, res) {
 });
 
 voice.post('/users', function(req, res) {
-  console.log(req.body);
+  console.log('the user code is: ' + req.body.code);
+  console.log('the ngrok id is: ' + req.body.ngrok);
+  updateNgrok(req.body.code, req.body.ngrok);
   res.json({ msg: 'completed' });
 });
-
-//http request code
-// const postData = querystring.stringify({
-//   msg: 'next'
-// });
-
-// const options = {
-//   hostname: 'b206242c.ngrok.io',
-//   port: 8081,
-//   path: '/get',
-//   method: 'POST',
-//   headers: {
-//     'Content-Type': 'application/x-www-form-urlencoded',
-//     'Content-Length': Buffer.byteLength(postData)
-//   }
-// };
-
-// const req2 = http.request(options, res => {
-//   console.log(`STATUS: ${res.statusCode}`);
-//   console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-//   res.setEncoding('utf8');
-//   res.on('data', chunk => {
-//     console.log(`BODY: ${chunk}`);
-//   });
-//   res.on('end', () => {
-//     console.log('No more data in response.');
-//   });
-// });
-
-// req2.on('error', e => {
-//   console.error(`problem with request: ${e.message}`);
-// });
-
-// req2.write(postData);
-// console.dir(req2);
-// req2.end();
 
 //Connect to Mlab database
 const mongoose = require('mongoose'),
@@ -150,12 +116,49 @@ db.once('open', function() {
   console.log('we are connected!');
 });
 
-function process_request(req, res, next) {
+//mlab functions
+const Connection = require('./models/connection');
+//new code functions
+function newCode() {
+  const val = Math.round(10000000 * Math.random());
+  return val;
+}
+
+//recieving ngrok from laptop
+function updateNgrok(code, ngrok) {
+  Connection.update({ code: code }, { $set: { ngrok: ngrok } })
+    .then(res.send('updated'))
+    .error(res.send('error' + error));
+}
+
+//recieving userID from phone
+function updateUser(req, res, next) {
+  Connection.update({ code: code }, { $set: { userID: userID } }).then(
+    res.send('updated')
+  );
+  next().error(res.send('error: ' + error));
+}
+
+function createUser(userID) {
+  const code = newCode();
+  //res.json(code)
+  let newConnection = new Connection({
+    code: code,
+    ngrok: null,
+    userID: userID
+  });
+  return newConnection;
+}
+
+//send command to laptop
+function sendCommand(req, res, next) {
   if (req.body.queryResult.intent.displayName == 'connect') {
-    //>>>>>>>>>>>DATABASE CODE HERE<<<<<<<<<<<<
+    res.locals.output_string =
+      'please enter code: ' + res.locals.connection.code;
+    next();
   } else if (req.body.queryResult.intent.displayName == 'nextSlide') {
     axios
-      .post('https://b206242c.ngrok.io/get', { msg: 'next' })
+      .post(res.locals.connection.ngrok + '/get', { msg: 'next' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to the next slide';
@@ -164,20 +167,10 @@ function process_request(req, res, next) {
       .catch(error => {
         console.log('error in nextSlide' + error);
       });
-    // var data = 'down';
-    // console.log(data);
-    // if (data && keys.includes(data)) {
-    //   try {
-    //     keySender.sendKey(data);
-    //     slide++;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
   } else if (req.body.queryResult.intent.displayName == 'goToSlide') {
     var slideNum = req.body.queryResult.parameters['number-integer'];
     axios
-      .post('https://b206242c.ngrok.io/get', { msg: 'goTo', num: slideNum })
+      .post(res.locas.connection.ngrok + '/get', { msg: 'goTo', num: slideNum })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to slide number ' + slideNum;
@@ -186,30 +179,9 @@ function process_request(req, res, next) {
       .catch(error => {
         console.log('error in goToSlide' + error);
       });
-    // var data = 'enter';
-    // console.log(data);
-    // if (data && keys.includes(data)) {
-    //   try {
-    //     if (slideNum < 10) {
-    //       keySender.sendKeys([slideNum, data]);
-    //     } else {
-    //       var slideNumStr = slideNum.toString();
-    //       var length = slideNumStr.length;
-    //       var array = [];
-    //       for (var i = 0; i < length; i++) {
-    //         array.push(slideNumStr.charAt(i));
-    //       }
-    //       array.push(data);
-    //       keySender.sendKeys(array);
-    //     }
-    //     slide = slideNum;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
-      .post('https://b206242c.ngrok.io/get', { msg: 'random' })
+      .post(res.locals.connection.ngrok + '/get', { msg: 'random' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'selected ' + response.data.msg;
@@ -218,12 +190,9 @@ function process_request(req, res, next) {
       .catch(error => {
         console.log('error in randonStudent' + error);
       });
-    // var rand = students[Math.floor(Math.random() * students.length)];
-    // output_string = 'Selected ' + rand;
-    // selectedStudent = rand;
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
     axios
-      .post('https://b206242c.ngrok.io/get', { msg: 'link' })
+      .post(res.locals.connection.ngrok + '/get', { msg: 'link' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'opening the link';
@@ -232,10 +201,9 @@ function process_request(req, res, next) {
       .catch(error => {
         console.log('error in goToLink' + error);
       });
-    // linkController.goToLink();
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
-      .post('https://b206242c.ngrok.io/get', { msg: 'back' })
+      .post(res.locals.connection.ngrok + '/get', { msg: 'back' })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to the previous slide';
@@ -244,21 +212,37 @@ function process_request(req, res, next) {
       .catch(error => {
         console.log('error in previousSlide' + error);
       });
-    // var data = 'up';
-    // console.log(data);
-    // if (data && keys.includes(data)) {
-    //   try {
-    //     keySender.sendKey(data);
-    //     slide--;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
     next();
   }
 }
+
+//find ngrok code
+function attachConnection(req, res, next) {
+  Connection.find({
+    userID: req.body.originalDetectIntentRequest.payload.user.userId
+  })
+    .exec()
+    .then(connection => {
+      if (connection.length == 0) {
+        let newConnection = createUser({
+          userID: req.body.originalDetectIntentRequest.payload.user.userId
+        });
+        newConnection.save().then(() => {
+          res.locals.connection = newConnection;
+          next();
+        });
+      } else {
+        res.locals.connection = connection[0];
+        next();
+      }
+    })
+    .catch(error => {
+      console.log('error in attachConnection: ' + error);
+    });
+}
+
 //WEBHOOK CODE ENDS
 
 // //Monkey patching the node-key-sender library to fix jar path issues
