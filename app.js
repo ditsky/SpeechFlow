@@ -196,10 +196,16 @@ function sendCommand(req, res, next) {
         console.log('error in randonStudent: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'goToLink') {
+    var queryText = req.body.queryResult.queryText;
+    var queryArr = queryText.split(' ');
+    var n = queryArr.indexOf('link');
+    var linkName = queryArr[n - 1];
+    linkName = linkName.toLowerCase();
+    console.log('THE LINK NAME IS: ' + linkName);
     axios
       .post(res.locals.connection.ngrok + '/get', {
         msg: 'link',
-        url: 'www.google.com'
+        name: linkName
       })
       .then(response => {
         console.log('on heroku sending to ngrok, change goToLink Later');
