@@ -245,6 +245,30 @@ function sendCommand(req, res, next) {
       .catch(error => {
         console.log('error in previousSlide: ' + error);
       });
+  } else if (req.body.queryResult.intent.displayName == 'pause') {
+    axios
+      .post(res.locals.connection.ngrok + '/get', { msg: 'space' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'OK';
+        next();
+      })
+      .catch(error => {
+        console.log('error in previousSlide: ' + error);
+      });
+  } else if (req.body.queryResult.intent.displayName == 'play') {
+    axios
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'space'
+      })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'OK';
+        next();
+      })
+      .catch(error => {
+        console.log('error in previousSlide: ' + error);
+      });
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
     next();
