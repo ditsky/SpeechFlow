@@ -157,9 +157,24 @@ function sendCommand(req, res, next) {
     res.locals.output_string =
       'please enter code: ' + res.locals.connection.code;
     next();
+  } else if (req.body.queryResult.intent.displayName == 'endPresentation') {
+    axios
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'end'
+      })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'OK';
+        next();
+      })
+      .catch(error => {
+        console.log('error in nextSlide: ' + error);
+      });
   } else if (req.body.queryResult.intent.displayName == 'nextSlide') {
     axios
-      .post(res.locals.connection.ngrok + '/get', { msg: 'next' })
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'next'
+      })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to the next slide';
@@ -185,7 +200,9 @@ function sendCommand(req, res, next) {
       });
   } else if (req.body.queryResult.intent.displayName == 'randomStudent') {
     axios
-      .post(res.locals.connection.ngrok + '/get', { msg: 'random' })
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'random'
+      })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         console.log('randomStudent response.data.msg: ' + response.data.msg);
@@ -217,7 +234,9 @@ function sendCommand(req, res, next) {
       });
   } else if (req.body.queryResult.intent.displayName == 'previousSlide') {
     axios
-      .post(res.locals.connection.ngrok + '/get', { msg: 'back' })
+      .post(res.locals.connection.ngrok + '/get', {
+        msg: 'back'
+      })
       .then(response => {
         console.log('on heroku sending to ngrok ');
         res.locals.output_string = 'Moving to the previous slide';
