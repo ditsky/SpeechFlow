@@ -1,17 +1,5 @@
 #! /usr/bin/env node
 
-//print the version of the weblication if command line arguments are passed
-if (
-  process.argv[2] &&
-  (process.argv[2].toLowerCase() === '-v' || process.argv[2] === '--version')
-) {
-  console.log('Slidex v 1.0.7');
-  process.exit(0);
-} else if (process.argv[2]) {
-  console.log('(✖_✖) Nothing I can do about that.');
-  process.exit(0);
-}
-
 const express = require('express'),
   keySender = require('node-key-sender'),
   ip = require('ip'),
@@ -107,12 +95,12 @@ voice.post('/users', function(req, res) {
 
 //Connect to Mlab database
 const mongoose = require('mongoose');
-const auth = require('./config/auth');
+//const auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
   ':' +
-  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
+  process.env.mlab_dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
