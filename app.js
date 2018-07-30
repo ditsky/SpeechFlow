@@ -107,12 +107,12 @@ voice.post('/users', function(req, res) {
 
 //Connect to Mlab database
 const mongoose = require('mongoose');
-// const auth = require('./config/auth');
+const auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-  process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
   ':' +
-  process.env.mlab_dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
+  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
@@ -401,26 +401,25 @@ function attachConnection(req, res, next) {
 // });
 // });
 
-var GUI = express();
 // view engine setup
-GUI.set('views', path.join(__dirname, 'views'));
-GUI.set('view engine', 'pug');
+voice.set('views', path.join(__dirname, 'views'));
+voice.set('view engine', 'pug');
 
-GUI.use(logger('dev'));
-GUI.use(express.json());
-GUI.use(express.urlencoded({ extended: false }));
-GUI.use(cookieParser());
-GUI.use(express.static(path.join(__dirname, 'public')));
+voice.use(logger('dev'));
+voice.use(express.json());
+voice.use(express.urlencoded({ extended: false }));
+voice.use(cookieParser());
+voice.use(express.static(path.join(__dirname, 'public')));
 
-GUI.use('/', indexRouter);
+voice.use('/', indexRouter);
 
 // catch 404 and forward to error handler
-GUI.use(function(req, res, next) {
+voice.use(function(req, res, next) {
   next(createError(404));
 });
 
 // error handler
-GUI.use(function(err, req, res, next) {
+voice.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -430,7 +429,6 @@ GUI.use(function(err, req, res, next) {
   res.render('error');
 });
 
-
 module.exports = voice;
 
-module.exports = GUI;
+// module.exports = voice;
