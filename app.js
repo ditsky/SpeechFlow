@@ -24,7 +24,10 @@ const express = require('express'),
   // server = require('http').Server(voice), // init an http server for dialogflow
   querystring = require('querystring'),
   http = require('http'),
-  axios = require('axios');
+  axios = require('axios'),
+  cookieParser = require('cookie-parser'),
+  createError = require('http-errors'),
+  logger = require('morgan');
 // socketServer = require('http').Server(socket), // init an http server for socket.io
 // io = require('socket.io')(socketServer), // not needed for now
 
@@ -45,6 +48,8 @@ keys = ['left', 'right', 'up', 'down', 'space', 'enter'];
 //     root: __dirname
 //   });
 // });
+
+var indexRouter = require('./routes/index');
 
 var slide = 1;
 var students = [
@@ -396,4 +401,36 @@ function attachConnection(req, res, next) {
 // });
 // });
 
+var GUI = express();
+// view engine setup
+GUI.set('views', path.join(__dirname, 'views'));
+GUI.set('view engine', 'pug');
+
+GUI.use(logger('dev'));
+GUI.use(express.json());
+GUI.use(express.urlencoded({ extended: false }));
+GUI.use(cookieParser());
+GUI.use(express.static(path.join(__dirname, 'public')));
+
+GUI.use('/', indexRouter);
+
+// catch 404 and forward to error handler
+GUI.use(function(req, res, next) {
+  next(createError(404));
+});
+
+// error handler
+GUI.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+
 module.exports = voice;
+
+module.exports = GUI;
