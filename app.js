@@ -95,12 +95,12 @@ voice.post('/users', function(req, res) {
 
 //Connect to Mlab database
 const mongoose = require('mongoose');
-const auth = require('./config/auth');
+//const auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
   ':' +
-  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
+  process.env.mlab_dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
