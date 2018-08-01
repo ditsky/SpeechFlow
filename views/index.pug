@@ -1,5 +1,52 @@
-extends layout
+doctype strict
+//
+  Design by TEMPLATED
+  http://templated.co
+  Released for free under the Creative Commons Attribution License
+  Name       : Joyousness
+  Description: A two-column, fixed-width design with dark color scheme.
+  Version    : 1.0
+  Released   : 20130919
+head
+  meta(http-equiv='Content-Type' content='text/html; charset=utf-8')
+  title
+  meta(name='keywords' content='')
+  meta(name='description' content='')
+  link(href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900' rel='stylesheet')
+  link(href='/stylesheets/default.css' rel='stylesheet' type='text/css' media='all')
+  //if IE 6
+    link(href='default_ie6.css' rel='stylesheet' type='text/css')
+#header-wrapper
+  #header.container
+    #logo
+      h1
+        a(href='/') SpeechFlow
+#wrapper
+  #welcome.wrapper-style1
+    .title
+      h2 About
+    p
+      strong SpeechFlow
+      |  is a voice app designed to improve your presentation flow, by allowing you to control the slideshow and interact with your audience using voice. It connects your phone to a local server on your computer using Google Assistant, allowing you to easily send voice requests to manage your presentation.
 
-block content
-  h1= title
-  p Welcome to #{title}
+#wrapper
+  #welcome.wrapper-style1
+    .title
+      h2 How to use?
+    p
+      | For download and installation instructions, please refer to our project's github 
+      a(href='https://github.com/ditsky/PresentationAssistant') here
+
+#footer.container
+  div
+    div
+      h2 Get in touch
+      span.byline For any feedback or questions contact us at:
+    ul.contact
+      li
+        | Sam Ruditsky: sruditsky@braneis.edu
+      li
+        | Huaigu Lin: kevinlinhg@brandeis.edu
+      li
+        | Joseph Kim: hahagugi@brandeis.edu
+ 
