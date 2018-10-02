@@ -95,12 +95,12 @@ voice.post('/users', function(req, res) {
 
 //Connect to Mlab database
 const mongoose = require('mongoose');
-//const auth = require('./config/auth');
+const auth = require('./config/auth');
 mongoose.connect(
   'mongodb://' +
-  process.env.mlab_dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
+  auth.mlab.dbuser + //Also stored in heroku config vars, use process.env.mlab_dbuser
   ':' +
-  process.env.mlab_dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
+  auth.mlab.dbpassword + //Also stored in heroku config vars, use process.env.mlab_dbpassword
     '@ds113680.mlab.com:13680/heroku_t46zp7gq'
 );
 const db = mongoose.connection;
@@ -247,7 +247,7 @@ function sendCommand(req, res, next) {
         next();
       })
       .catch(error => {
-        console.log('error in previousSlide: ' + error);
+        console.log('error in pause: ' + error);
       });
   } else if (req.body.queryResult.intent.displayName == 'play') {
     axios
@@ -260,7 +260,18 @@ function sendCommand(req, res, next) {
         next();
       })
       .catch(error => {
-        console.log('error in previousSlide: ' + error);
+        console.log('error in play: ' + error);
+      });
+  } else if (req.body.queryResult.intent.displayName == 'openPowerPoint') {
+    axios
+      .post(res.locals.connection.ngrok + '/get', { msg: 'ppt' })
+      .then(response => {
+        console.log('on heroku sending to ngrok ');
+        res.locals.output_string = 'OK';
+        next();
+      })
+      .catch(error => {
+        console.log('error in openPowerPoint: ' + error);
       });
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
