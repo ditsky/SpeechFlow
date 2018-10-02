@@ -266,7 +266,7 @@ function sendCommand(req, res, next) {
     axios
       .post(res.locals.connection.ngrok + '/get', { msg: 'ppt' })
       .then(response => {
-        console.log('on heroku sending to ngrok ');
+        console.log('On Heroku openPowerPoint, came back from ngrok');
         res.locals.output_string = 'OK';
         next();
       })
