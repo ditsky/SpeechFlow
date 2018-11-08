@@ -15,55 +15,9 @@ const express = require('express'),
   axios = require('axios'),
   cookieParser = require('cookie-parser'),
   createError = require('http-errors'),
+  // socketServer = require('http').Server(voice), // init an http server for socket.io
+  // io = require('socket.io')(socketServer),
   logger = require('morgan');
-// socketServer = require('http').Server(socket), // init an http server for socket.io
-// io = require('socket.io')(socketServer), // not needed for now
-
-// server.listen(process.env.PORT, function() {
-//   // let the dialogflow's server listen to heroku's port
-//   console.log('API server listening...');
-// });
-
-//only these keys will be activated by node-key-sender
-keys = ['left', 'right', 'up', 'down', 'space', 'enter'];
-
-// //to serve static files for client
-// voice.use(express.static(path.join(__dirname, 'public')));
-
-// //serve the html page with buttons
-// voice.get('/', (req, res) => {
-//   res.sendFile('public/index.html', {
-//     root: __dirname
-//   });
-// });
-
-var indexRouter = require('./routes/index');
-
-var slide = 1;
-var students = [
-  'Sam',
-  'Joseph',
-  'Huaigu',
-  'Marie',
-  'Xuxin',
-  'Arjun',
-  'Casper',
-  'Tim',
-  'Cliffe',
-  'EK',
-  'Gavin',
-  'Jen',
-  'Jialin',
-  'Jierui',
-  'Kelley',
-  'Luis',
-  'Michael',
-  'Sandy',
-  'Spencer',
-  'Xuantong',
-  'Ziqing'
-];
-var selectedStudent = '';
 
 //WEBHOOK CODE
 var bodyParser = require('body-parser');
@@ -71,11 +25,6 @@ var bodyParser = require('body-parser');
 voice.use(bodyParser.json());
 
 voice.post('/hook', attachConnection, sendCommand, function(req, res) {
-  // var d = new Date();
-  // var time = d.toTimeString();
-  // console.log(time);
-  // console.log('req.body is: ');
-  // console.log(JSON.stringify(req.body, null, 5));
   res.json({
     fulfillmentMessages: [],
     fulfillmentText: res.locals.output_string,
@@ -273,6 +222,17 @@ function sendCommand(req, res, next) {
       .catch(error => {
         console.log('error in openPowerPoint: ' + error);
       });
+  } else if (req.body.queryResult.intent.displayName == 'openVideo') {
+    axios
+      .post(res.locals.connection.ngrok + '/get', { msg: 'video' })
+      .then(response => {
+        console.log('On Heroku openVideo, came back from ngrok');
+        res.locals.output_string = 'OK';
+        next();
+      })
+      .catch(error => {
+        console.log('error in openVideo: ' + error);
+      });
   } else {
     res.locals.output_string = 'oh noooooooooooooo';
     next();
@@ -315,36 +275,6 @@ function attachConnection(req, res, next) {
 
 //WEBHOOK CODE ENDS
 
-// //Monkey patching the node-key-sender library to fix jar path issues
-// keySender.execute = function(arrParams) {
-//   return new Promise(function(resolve, reject) {
-//     //path where the jar file resides
-//     const jarPath = path.join(
-//       __dirname,
-//       'node_modules',
-//       'node-key-sender',
-//       'jar',
-//       'key-sender.jar'
-//     );
-//     //generate command to execute the jar file
-//     //original command with path in quotes replace with path without enclosed in quotes
-//     const command =
-//       'java -jar ' +
-//       jarPath +
-//       ' ' +
-//       arrParams.join(' ') +
-//       keySender.getCommandLineOptions();
-
-//     return exec(command, {}, function(error, stdout, stderr) {
-//       if (error == null) {
-//         resolve(stdout, stderr);
-//       } else {
-//         reject(error, stdout, stderr);
-//       }
-//     });
-//   });
-// };
-
 // //on new connection to socket.io
 // io.on('connection', function(socket) {
 //   socket.emit('status', 200); //send initial status code
@@ -361,45 +291,6 @@ function attachConnection(req, res, next) {
 //   });
 // });
 
-//init schema for user input
-// const schema = {
-//   properties: {
-//     portNumber: {
-//       description: 'Type a port number - Press Enter to start with -> ',
-//       default: '8080',
-//       conform: function(value) {
-//         if (/^[0-9]+$/.test(value)) {
-//           //check whether the requested port is in protected range.
-//           if (value >= 1024 && value <= 65535) return true;
-//           else {
-//             schema.properties.portNumber.message =
-//               'Port Number should be within (1024 - 65535) Due to root privilege requirement ';
-//             return false;
-//           }
-//         } else {
-//           schema.properties.portNumber.message =
-//             'Port number should be only numbers';
-//           return false;
-//         }
-//       }
-//     }
-//   }
-// };
-
-//prompt for port to run the server
-// prompt.start();
-// prompt.get(schema, function(err, result) {
-//   //if result is undefined, ie. user tried to key combo to exit or some BS. exit the web
-//   if (!result) {
-//     process.exit(0);
-//   }
-//   //use default port, if input is invalid
-//   const port = result ? result.portNumber : 8081;
-// server.listen(herokuPORT, function() {
-//   console.log('API server listening...');
-// });
-// });
-
 // view engine setup
 voice.set('views', path.join(__dirname, 'views'));
 voice.set('view engine', 'pug');
@@ -410,6 +301,7 @@ voice.use(express.urlencoded({ extended: false }));
 voice.use(cookieParser());
 voice.use(express.static(path.join(__dirname, 'public')));
 
+var indexRouter = require('./routes/index');
 voice.use('/', indexRouter);
 
 // catch 404 and forward to error handler
